@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高级WhatsApp文本保护工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- 配置Tailwind CSS -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#25D366', // WhatsApp绿
+            secondary: '#128C7E',
+            neutral: '#F0F0F0',
+            dark: '#1C1E21',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .transition-custom {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .card-hover {
+        @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+      }
+      .btn-primary {
+        @apply bg-primary hover:bg-secondary text-white font-medium py-2.5 px-4 rounded-lg transition-custom shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+      }
+      .btn-secondary {
+        @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition-custom;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="bg-primary text-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-whatsapp text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold">高级WhatsApp文本保护工具</h1>
+      </div>
+      
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="#features" class="hover:text-neutral transition-colors">功能</a>
+        <a href="#how-to" class="hover:text-neutral transition-colors">使用指南</a>
+        <a href="#settings" class="hover:text-neutral transition-colors">高级设置</a>
+        <a href="#stats" class="hover:text-neutral transition-colors">统计分析</a>
+      </div>
+      
+      <div class="md:hidden">
+        <button id="menuBtn" class="text-white focus:outline-none">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div id="mobileMenu" class="md:hidden bg-white shadow-lg absolute w-full left-0 top-full transform -translate-y-full opacity-0 transition-all duration-300 pointer-events-none">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="#features" class="text-gray-800 hover:text-primary transition-colors py-2">功能</a>
+        <a href="#how-to" class="text-gray-800 hover:text-primary transition-colors py-2">使用指南</a>
+        <a href="#settings" class="text-gray-800 hover:text-primary transition-colors py-2">高级设置</a>
+        <a href="#stats" class="text-gray-800 hover:text-primary transition-colors py-2">统计分析</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- 英雄区域 -->
+    <section class="max-w-6xl mx-auto mb-12">
+      <div class="bg-gradient-to-r from-primary/90 to-secondary/90 rounded-2xl shadow-xl overflow-hidden">
+        <div class="grid md:grid-cols-2 gap-8 p-6 md:p-10">
+          <div class="flex flex-col justify-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-white mb-4 text-shadow">保护您的WhatsApp账号安全</h2>
+            <p class="text-white/90 text-lg mb-6">通过智能文本修改技术，让您的消息看起来自然而独特，避免被系统识别为垃圾信息。</p>
+            <div class="flex flex-wrap gap-4">
+              <button id="scrollToEditor" class="btn-primary flex items-center space-x-2">
+                <i class="fa fa-magic"></i>
+                <span>开始使用</span>
+              </button>
+              <a href="#features" class="bg-white/20 hover:bg-white/30 text-white font-medium py-2.5 px-4 rounded-lg transition-custom flex items-center space-x-2">
+                <i class="fa fa-info-circle"></i>
+                <span>了解更多</span>
+              </a>
+            </div>
+          </div>
+          <div class="hidden md:flex items-center justify-center">
+            <img src="https://picsum.photos/600/400" alt="保护WhatsApp账号安全" class="rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 编辑器区域 -->
+    <section id="editor" class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fa fa-edit text-primary mr-2"></i>
+        文本编辑器
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- 原始文本输入 -->
+        <div>
+          <label for="originalText" class="block text-sm font-medium text-gray-700 mb-2">输入您的原始文本</label>
+          <div class="relative">
+            <textarea 
+              id="originalText" 
+              class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom resize-none"
+              placeholder="在此输入您想要发送的消息..."
+            ></textarea>
+            <div class="absolute bottom-2 right-2 text-xs text-gray-500">
+              <span id="charCount">0</span> 字符
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button id="clearBtn" class="btn-secondary text-sm flex items-center">
+              <i class="fa fa-eraser mr-1"></i> 清空
+            </button>
+            <button id="loadExampleBtn" class="btn-secondary text-sm flex items-center">
+              <i class="fa fa-file-text-o mr-1"></i> 加载示例
+            </button>
+            <button id="batchModeBtn" class="btn-secondary text-sm flex items-center">
+              <i class="fa fa-th-list mr-1"></i> 批量模式
+            </button>
+          </div>
+        </div>
+        
+        <!-- 随机化选项 -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">随机化选项</label>
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 h-full">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="synonymReplace" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded" checked>
+                  <span class="ml-2 text-sm text-gray-700">同义词替换</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  将常见词汇替换为同义词
+                </div>
+              </div>
+              
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="shuffleSentences" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded" checked>
+                  <span class="ml-2 text-sm text-gray-700">打乱句子顺序</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  随机调整句子排列顺序
+                </div>
+              </div>
+              
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="addRandomPhrases" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded" checked>
+                  <span class="ml-2 text-sm text-gray-700">添加随机短语</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  在文本中插入自然连接短语
+                </div>
+              </div>
+              
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="changeTone" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                  <span class="ml-2 text-sm text-gray-700">改变语气</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  调整文本的正式程度
+                </div>
+              </div>
+              
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="insertEmojis" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                  <span class="ml-2 text-sm text-gray-700">插入表情符号</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  在随机位置添加表情符号
+                </div>
+              </div>
+              
+              <div>
+                <label class="flex items-center">
+                  <input type="checkbox" id="varyPunctuation" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                  <span class="ml-2 text-sm text-gray-700">变化标点符号</span>
+                </label>
+                <div class="ml-6 mt-1 text-xs text-gray-500">
+                  随机调整标点符号使用
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <h4 class="font-medium text-gray-800 mb-2">随机化强度</h4>
+              <div class="flex items-center">
+                <span class="text-xs text-gray-500 mr-2">低</span>
+                <input 
+                  type="range" 
+                  id="randomizeIntensity" 
+                  min="1" 
+                  max="10" 
+                  value="5" 
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                >
+                <span class="text-xs text-gray-500 ml-2">高</span>
+              </div>
+              <div class="text-right text-xs text-gray-500 mt-1">
+                当前: <span id="intensityValue">中等</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 处理按钮 -->
+      <div class="flex flex-wrap justify-center gap-4 mb-8">
+        <button id="generateBtn" class="btn-primary flex items-center space-x-2">
+          <i class="fa fa-random"></i>
+          <span>生成随机文本</span>
+        </button>
+        <button id="generateMultipleBtn" class="btn-primary flex items-center space-x-2">
+          <i class="fa fa-clone"></i>
+          <span>生成多个版本</span>
+        </button>
+        <button id="analyzeBtn" class="btn-secondary flex items-center space-x-2">
+          <i class="fa fa-bar-chart"></i>
+          <span>分析文本</span>
+        </button>
+      </div>
+      
+      <!-- 结果区域 -->
+      <div class="mb-8">
+        <label for="resultText" class="block text-sm font-medium text-gray-700 mb-2">随机化后的文本</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="relative">
+            <textarea 
+              id="resultText" 
+              class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom resize-none"
+              placeholder="生成的随机文本将显示在这里..."
+              readonly
+            ></textarea>
+            <div class="absolute bottom-2 right-2 text-xs text-gray-500">
+              <span id="resultCharCount">0</span> 字符
+            </div>
+          </div>
+          
+          <!-- 相似度指标 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h4 class="font-medium text-gray-800 mb-3">文本相似度指标</h4>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600">词汇匹配度</span>
+                  <span id="wordMatch" class="font-medium">--</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="wordMatchBar" class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600">结构相似度</span>
+                  <span id="structureMatch" class="font-medium">--</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="structureMatchBar" class="bg-yellow-500 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600">整体相似度</span>
+                  <span id="overallMatch" class="font-medium">--</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="overallMatchBar" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <div class="flex items-center text-sm">
+                  <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                  <span class="text-gray-600">低风险 (相似度 < 30%)</span>
+                </div>
+                <div class="flex items-center text-sm mt-1">
+                  <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                  <span class="text-gray-600">中等风险 (30%-60%)</span>
+                </div>
+                <div class="flex items-center text-sm mt-1">
+                  <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                  <span class="text-gray-600">高风险 (相似度 > 60%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 操作按钮 -->
+      <div class="flex flex-wrap justify-center gap-4">
+        <button id="copyBtn" class="btn-primary flex items-center space-x-2">
+          <i class="fa fa-copy"></i>
+          <span>复制到剪贴板</span>
+        </button>
+        <button id="saveTemplateBtn" class="btn-primary flex items-center space-x-2">
+          <i class="fa fa-save"></i>
+          <span>保存为模板</span>
+        </button>
+        <a 
+          id="whatsappBtn" 
+          href="#" 
+          target="_blank" 
+          class="btn-primary flex items-center space-x-2"
+          disabled
+        >
+          <i class="fa fa-whatsapp"></i>
+          <span>发送到WhatsApp</span>
+        </a>
+        <button id="compareBtn" class="btn-secondary flex items-center space-x-2">
+          <i class="fa fa-exchange"></i>
+          <span>对比版本</span>
+        </button>
+      </div>
+    </section>
+    
+    <!-- 批量处理模式 -->
+    <section id="batchMode" class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12 hidden">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fa fa-th-list text-primary mr-2"></i>
+        批量处理模式
+      </h2>
+      
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <label class="block text-sm font-medium text-gray-700">输入多行文本</label>
+          <span class="text-xs text-gray-500">每行一条消息</span>
+        </div>
+        <textarea 
+          id="batchInput" 
+          class="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+          placeholder="在此输入多行文本..."
+        ></textarea>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label for="batchPerMessage" class="block text-sm font-medium text-gray-700 mb-1">每个消息生成数量</label>
+          <input 
+            type="number" 
+            id="batchPerMessage" 
+            min="1" 
+            max="50" 
+            value="3" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+          >
+        </div>
+        
+        <div>
+          <label for="batchFormat" class="block text-sm font-medium text-gray-700 mb-1">输出格式</label>
+          <select 
+            id="batchFormat" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+          >
+            <option value="plain">纯文本 (每行一个版本)</option>
+            <option value="json">JSON 格式</option>
+            <option value="csv">CSV 格式</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="batchSeparator" class="block text-sm font-medium text-gray-700 mb-1">版本分隔符</label>
+          <input 
+            type="text" 
+            id="batchSeparator" 
+            value="---" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+          >
+        </div>
+      </div>
+      
+      <div class="flex justify-center mb-6">
+        <button id="processBatchBtn" class="btn-primary flex items-center space-x-2">
+          <i class="fa fa-cogs"></i>
+          <span>处理批量文本</span>
+        </button>
+      </div>
+      
+      <div>
+        <label for="batchOutput" class="block text-sm font-medium text-gray-700 mb-2">处理结果</label>
+        <div class="relative">
+          <textarea 
+            id="batchOutput" 
+            class="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+            placeholder="处理结果将显示在这里..."
+            readonly
+          ></textarea>
+          <button id="downloadBatchBtn" class="absolute top-2 right-2 text-primary hover:text-secondary transition-colors text-sm">
+            <i class="fa fa-download mr-1"></i> 下载
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-right">
+        <button id="closeBatchModeBtn" class="btn-secondary flex items-center space-x-2 mx-auto md:mx-0">
+          <i class="fa fa-times"></i>
+          <span>关闭批量模式</span>
+        </button>
+      </div>
+    </section>
+    
+    <!-- 模板管理 -->
+    <section id="templates" class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fa fa-folder-open text-primary mr-2"></i>
+        消息模板
+      </h2>
+      
+      <div class="flex flex-wrap justify-between items-center mb-6">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="templateSearch" 
+            placeholder="搜索模板..." 
+            class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom w-full md:w-64"
+          >
+          <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <div class="flex space-x-2 mt-3 md:mt-0">
+          <button id="newTemplateBtn" class="btn-primary flex items-center space-x-2 text-sm">
+            <i class="fa fa-plus"></i>
+            <span>新建模板</span>
+          </button>
+          <button id="importTemplateBtn" class="btn-secondary flex items-center space-x-2 text-sm">
+            <i class="fa fa-upload"></i>
+            <span>导入模板</span>
+          </button>
+          <button id="exportTemplateBtn" class="btn-secondary flex items-center space-x-2 text-sm">
+            <i class="fa fa-download"></i>
+            <span>导出模板</span>
+          </button>
+        </div>
+      </div>
+      
+      <div id="templatesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="text-center text-gray-500 italic py-8 col-span-full">
+          暂无保存的模板
+        </div>
+      </div>
+    </section>
+    
+    <!-- 统计分析 -->
+    <section id="stats" class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fa fa-bar-chart text-primary mr-2"></i>
+        统计分析
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-4">文本修改效果</h4>
+          <div class="h-64">
+            <canvas id="modificationChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-4">常用替换词汇</h4>
+          <div class="h-64">
+            <canvas id="wordReplacementChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-3">本周修改统计</h4>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">生成消息总数</span>
+              <span class="font-medium" id="totalMessages">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">平均相似度降低</span>
+              <span class="font-medium" id="avgSimilarityReduction">0%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">最常用功能</span>
+              <span class="font-medium" id="mostUsedFeature">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-3">风险评估</h4>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">低风险消息</span>
+              <span class="font-medium text-green-600" id="lowRiskMessages">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">中等风险消息</span>
+              <span class="font-medium text-yellow-600" id="mediumRiskMessages">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">高风险消息</span>
+              <span class="font-medium text-red-600" id="highRiskMessages">0</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h4 class="font-medium text-gray-800 mb-3">使用建议</h4>
+          <div class="text-sm text-gray-600 space-y-2">
+            <div class="flex items-start">
+              <i class="fa fa-check-circle text-green-500 mt-1 mr-2"></i>
+              <span>您的文本修改效果良好，继续保持多样化的消息内容</span>
+            </div>
+            <div class="flex items-start">
+              <i class="fa fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+              <span>建议增加"插入表情符号"功能的使用，使消息更加自然</span>
+            </div>
+            <div class="flex items-start">
+              <i class="fa fa-info-circle text-blue-500 mt-1 mr-2"></i>
+              <span>尝试使用批量处理功能，提高工作效率</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 功能介绍 -->
+    <section id="features" class="max-w-6xl mx-auto mb-12">
+      <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">强大功能，保护您的账号</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-language text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">智能文本修改</h3>
+          <p class="text-gray-600">使用先进的同义词库和语法分析，自动修改您的文本内容，保持原意但改变表达方式。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-sliders text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">自定义修改选项</h3>
+          <p class="text-gray-600">根据您的需求选择不同的修改方式，包括同义词替换、句子重组、随机短语插入等。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-bolt text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">批量处理</h3>
+          <p class="text-gray-600">一次性处理多条消息，为每条消息生成多个不同版本，满足大规模发送的需求。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-folder-open text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">模板管理</h3>
+          <p class="text-gray-600">保存常用的消息模板，随时调用并生成多样化版本，提高工作效率。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-bar-chart text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">统计分析</h3>
+          <p class="text-gray-600">提供文本修改效果的详细统计，帮助您了解修改质量并优化您的消息策略。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+          <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <i class="fa fa-shield text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">账号保护</h3>
+          <p class="text-gray-600">通过多样化的文本修改，降低被系统识别为垃圾信息的风险，保护您的WhatsApp账号安全。</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 使用指南 -->
+    <section id="how-to" class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">使用指南</h2>
+      
+      <div class="space-y-8">
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">1</div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">输入原始文本</h3>
+            <p class="text-gray-600">在文本编辑器中输入您想要发送的原始消息内容。您也可以从模板库中选择一个已保存的模板。</p>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">2</div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">选择修改选项</h3>
+            <p class="text-gray-600">根据您的需求选择一种或多种文本修改方式，调整随机化强度，以控制修改的程度。</p>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">3</div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">生成随机文本</h3>
+            <p class="text-gray-600">点击"生成随机文本"按钮，系统将根据您的设置对原始文本进行修改，并在结果区域显示。</p>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">4</div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">查看相似度指标</h3>
+            <p class="text-gray-600">检查生成的文本与原始文本的相似度指标，确保修改程度符合您的需求。</p>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">5</div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">复制或发送</h3>
+            <p class="text-gray-600">点击"复制到剪贴板"按钮，将生成的文本复制，然后粘贴到WhatsApp中发送，或者直接点击"发送到WhatsApp"按钮。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-800 text-white py-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fa fa-whatsapp text-primary mr-2"></i>
+            高级WhatsApp文本保护工具
+          </h3>
+          <p class="text-gray-400 mb-4">保护您的WhatsApp账号安全，避免被系统识别为垃圾信息。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">功能</a></li>
+            <li><a href="#how-to" class="text-gray-400 hover:text-white transition-colors">使用指南</a></li>
+            <li><a href="#settings" class="text-gray-400 hover:text-white transition-colors">高级设置</a></li>
+            <li><a href="#stats" class="text-gray-400 hover:text-white transition-colors">统计分析</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">支持</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">订阅更新</h4>
+          <p class="text-gray-400 mb-4">订阅我们的通讯，获取最新功能和更新。</p>
+          <div class="flex">
+            <input 
+              type="email" 
+              placeholder="您的邮箱地址" 
+              class="px-4 py-2 bg-gray-700 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary flex-grow"
+            >
+            <button class="bg-primary hover:bg-secondary px-4 py-2 rounded-r-lg transition-colors">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 高级WhatsApp文本保护工具. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 模态框 -->
+  <div id="templateModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 transform transition-all">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-xl font-bold text-gray-800">新建模板</h3>
+        <button id="closeTemplateModalBtn" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <div class="mb-4">
+          <label for="templateName" class="block text-sm font-medium text-gray-700 mb-1">模板名称</label>
+          <input 
+            type="text" 
+            id="templateName" 
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+            placeholder="输入模板名称"
+          >
+        </div>
+        
+        <div class="mb-4">
+          <label for="templateContent" class="block text-sm font-medium text-gray-700 mb-1">模板内容</label>
+          <textarea 
+            id="templateContent" 
+            class="w-full h-32 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom"
+            placeholder="输入模板内容"
+          ></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button id="cancelTemplateBtn" class="btn-secondary">取消</button>
+          <button id="saveTemplateModalBtn" class="btn-primary">保存模板</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="compareModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl mx-4 transform transition-all">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-xl font-bold text-gray-800">版本对比</h3>
+        <button id="closeCompareModalBtn" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2">原始文本</h4>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-64 overflow-auto" id="originalTextCompare"></div>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2">修改后文本</h4>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-64 overflow-auto" id="modifiedTextCompare"></div>
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <h4 class="font-medium text-gray-800 mb-3">修改摘要</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="text-sm text-gray-600">词汇替换</div>
+              <div class="text-xl font-bold text-primary" id="wordReplacementsCount">0</div>
+            </div>
+            
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="text-sm text-gray-600">结构变化</div>
+              <div class="text-xl font-bold text-primary" id="structureChangesCount">0</div>
+            </div>
+            
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="text-sm text-gray-600">添加内容</div>
+              <div class="text-xl font-bold text-primary" id="addedContentCount">0</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <h4 class="font-medium text-gray-800 mb-3">详细修改</h4>
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-40 overflow-auto" id="detailedChanges"></div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button id="closeCompareBtn" class="btn-secondary">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化事件监听器
+      initEventListeners();
+      
+      // 初始化统计图表
+      initCharts();
+      
+      // 更新字符计数
+      updateCharCount();
+    });
+    
+    // 初始化事件监听器
+    function initEventListeners() {
+      // 移动端菜单
+      const menuBtn = document.getElementById('menuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      menuBtn.addEventListener('click', function() {
+        if (mobileMenu.classList.contains('opacity-0')) {
+          mobileMenu.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
+          mobileMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+        } else {
+          mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+          mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+        }
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          // 关闭移动菜单
+          mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+          mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+      
+      // 滚动到编辑器按钮
+      document.getElementById('scrollToEditor').addEventListener('click', function() {
+        const editor = document.getElementById('editor');
+        window.scrollTo({
+          top: editor.offsetTop - 80,
+          behavior: 'smooth'
+        });
+      });
+      
+      // 生成随机文本按钮
+      document.getElementById('generateBtn').addEventListener('click', function() {
+        const originalText = document.getElementById('originalText').value.trim();
+        if (!originalText) {
+          alert('请输入原始文本');
+          return;
+        }
+        
+        const intensity = parseInt(document.getElementById('randomizeIntensity').value);
+        const modifiedText = randomizeText(originalText, intensity);
+        
+        document.getElementById('resultText').value = modifiedText;
+        updateCharCount();
+        updateSimilarityIndicators(originalText, modifiedText);
+        
+        // 更新WhatsApp链接
+        updateWhatsappLink(modifiedText);
+      });
+      
+      // 清空按钮
+      document.getElementById('clearBtn').addEventListener('click', function() {
+        document.getElementById('originalText').value = '';
+        document.getElementById('resultText').value = '';
+        updateCharCount();
+        resetSimilarityIndicators();
+      });
+      
+      // 加载示例按钮
+      document.getElementById('loadExampleBtn').addEventListener('click', function() {
+        const exampleText = "您好！感谢您的咨询。我们的产品质量可靠，价格优惠，欢迎选购。如果您有任何问题，请随时联系我们，我们将竭诚为您服务。期待与您的合作！";
+        document.getElementById('originalText').value = exampleText;
+        updateCharCount();
+      });
+      
+      // 批量模式按钮
+      document.getElementById('batchModeBtn').addEventListener('click', function() {
+        const batchMode = document.getElementById('batchMode');
+        batchMode.classList.toggle('hidden');
+        
+        // 如果显示批量模式，则将原始文本复制到批量输入框
+        if (!batchMode.classList.contains('hidden')) {
+          const originalText = document.getElementById('originalText').value.trim();
+          if (originalText) {
+            document.getElementById('batchInput').value = originalText;
+          }
+        }
+      });
+      
+      // 关闭批量模式按钮
+      document.getElementById('closeBatchModeBtn').addEventListener('click', function() {
+        document.getElementById('batchMode').classList.add('hidden');
+      });
+      
+      // 处理批量文本按钮
+      document.getElementById('processBatchBtn').addEventListener('click', function() {
+        const batchInput = document.getElementById('batchInput').value.trim();
+        if (!batchInput) {
+          alert('请输入批量文本');
+          return;
+        }
+        
+        const lines = batchInput.split('\n');
+        const perMessage = parseInt(document.getElementById('batchPerMessage').value);
+        const format = document.getElementById('batchFormat').value;
+        const separator = document.getElementById('batchSeparator').value;
+        
+        let result = '';
+        
+        if (format === 'json') {
+          const output = [];
+          
+          lines.forEach(line => {
+            if (line.trim()) {
+              const variations = [];
+              for (let i = 0; i < perMessage; i++) {
+                variations.push(randomizeText(line, 5));
+              }
+              output.push({
+                original: line,
+                variations: variations
+              });
+            }
+          });
+          
+          result = JSON.stringify(output, null, 2);
+        } else if (format === 'csv') {
+          result = '原始文本,';
+          for (let i = 1; i <= perMessage; i++) {
+            result += `变体${i},`;
+          }
+          result = result.slice(0, -1) + '\n';
+          
+          lines.forEach(line => {
+            if (line.trim()) {
+              result += `"${line.replace(/"/g, '""')}",`;
+              for (let i = 0; i < perMessage; i++) {
+                result += `"${randomizeText(line, 5).replace(/"/g, '""')}",`;
+              }
+              result = result.slice(0, -1) + '\n';
+            }
+          });
+        } else {
+          // 纯文本格式
+          lines.forEach(line => {
+            if (line.trim()) {
+              for (let i = 0; i < perMessage; i++) {
+                result += randomizeText(line, 5) + '\n';
+              }
+              result += separator + '\n';
+            }
+          });
+        }
+        
+        document.getElementById('batchOutput').value = result;
+      });
+      
+      // 下载批量结果按钮
+      document.getElementById('downloadBatchBtn').addEventListener('click', function() {
+        const result = document.getElementById('batchOutput').value;
+        if (!result) {
+          alert('没有可下载的结果');
+          return;
+        }
+        
+        const format = document.getElementById('batchFormat').value;
+        let fileName = '批量处理结果';
+        let contentType = 'text/plain';
+        
+        if (format === 'json') {
+          fileName += '.json';
+          contentType = 'application/json';
+        } else if (format === 'csv') {
+          fileName += '.csv';
+          contentType = 'text/csv';
+        } else {
+          fileName += '.txt';
+        }
+        
+        const blob = new Blob([result], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+      
+      // 随机化强度滑块
+      const intensitySlider = document.getElementById('randomizeIntensity');
+      const intensityValue = document.getElementById('intensityValue');
+      
+      intensitySlider.addEventListener('input', function() {
+        const value = parseInt(this.value);
+        let text = '极低';
+        
+        if (value >= 2 && value <= 3) text = '低';
+        else if (value >= 4 && value <= 6) text = '中等';
+        else if (value >= 7 && value <= 8) text = '高';
+        else if (value >= 9) text = '极高';
+        
+        intensityValue.textContent = text;
+      });
+      
+      // 复制到剪贴板按钮
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        const resultText = document.getElementById('resultText');
+        if (!resultText.value.trim()) {
+          alert('没有可复制的文本');
+          return;
+        }
+        
+        resultText.select();
+        document.execCommand('copy');
+        
+        // 显示复制成功提示
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+        
+        setTimeout(() => {
+          this.innerHTML = originalText;
+        }, 2000);
+      });
+      
+      // 保存为模板按钮
+      document.getElementById('saveTemplateBtn').addEventListener('click', function() {
+        const resultText = document.getElementById('resultText').value.trim();
+        if (!resultText) {
+          alert('请先生成要保存的文本');
+          return;
+        }
+        
+        document.getElementById('templateContent').value = resultText;
+        document.getElementById('templateName').value = '';
+        document.getElementById('templateModal').classList.remove('hidden');
+        document.getElementById('templateName').focus();
+      });
+      
+      // 关闭模板模态框按钮
+      document.getElementById('closeTemplateModalBtn').addEventListener('click', function() {
+        document.getElementById('templateModal').classList.add('hidden');
+      });
+      
+      // 取消模板按钮
+      document.getElementById('cancelTemplateBtn').addEventListener('click', function() {
+        document.getElementById('templateModal').classList.add('hidden');
+      });
+      
+      // 保存模板按钮
+      document.getElementById('saveTemplateModalBtn').addEventListener('click', function() {
+        const templateName = document.getElementById('templateName').value.trim();
+        const templateContent = document.getElementById('templateContent').value.trim();
+        
+        if (!templateName) {
+          alert('请输入模板名称');
+          return;
+        }
+        
+        if (!templateContent) {
+          alert('模板内容不能为空');
+          return;
+        }
+        
+        // 保存模板到本地存储
+        let templates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+        templates.push({
+          id: Date.now(),
+          name: templateName,
+          content: templateContent,
+          created: new Date().toISOString()
+        });
+        
+        localStorage.setItem('whatsapp_templates', JSON.stringify(templates));
+        
+        // 更新模板列表
+        updateTemplatesList();
+        
+        // 关闭模态框
+        document.getElementById('templateModal').classList.add('hidden');
+        
+        // 显示成功提示
+        alert('模板已成功保存');
+      });
+      
+      // 新建模板按钮
+      document.getElementById('newTemplateBtn').addEventListener('click', function() {
+        document.getElementById('templateContent').value = '';
+        document.getElementById('templateName').value = '';
+        document.getElementById('templateModal').classList.remove('hidden');
+        document.getElementById('templateName').focus();
+      });
+      
+      // 导出模板按钮
+      document.getElementById('exportTemplateBtn').addEventListener('click', function() {
+        const templates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+        
+        if (templates.length === 0) {
+          alert('没有可导出的模板');
+          return;
+        }
+        
+        const blob = new Blob([JSON.stringify(templates, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'whatsapp_templates.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+      
+      // 导入模板按钮
+      document.getElementById('importTemplateBtn').addEventListener('click', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const templates = JSON.parse(e.target.result);
+              
+              if (!Array.isArray(templates)) {
+                alert('无效的模板文件');
+                return;
+              }
+              
+              // 合并现有模板
+              let existingTemplates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+              const newTemplates = templates.filter(template => {
+                return !existingTemplates.some(existing => existing.id === template.id);
+              });
+              
+              existingTemplates = [...existingTemplates, ...newTemplates];
+              localStorage.setItem('whatsapp_templates', JSON.stringify(existingTemplates));
+              
+              // 更新模板列表
+              updateTemplatesList();
+              
+              alert(`成功导入 ${newTemplates.length} 个模板`);
+            } catch (error) {
+              alert('导入模板失败: ' + error.message);
+            }
+          };
+          reader.readAsText(file);
+        };
+        
+        input.click();
+      });
+      
+      // 搜索模板
+      document.getElementById('templateSearch').addEventListener('input', function() {
+        updateTemplatesList(this.value);
+      });
+      
+      // 对比版本按钮
+      document.getElementById('compareBtn').addEventListener('click', function() {
+        const originalText = document.getElementById('originalText').value.trim();
+        const modifiedText = document.getElementById('resultText').value.trim();
+        
+        if (!originalText || !modifiedText) {
+          alert('请先输入原始文本并生成修改后的文本');
+          return;
+        }
+        
+        document.getElementById('originalTextCompare').textContent = originalText;
+        document.getElementById('modifiedTextCompare').textContent = modifiedText;
+        
+        // 计算修改统计
+        const { wordReplacements, structureChanges, addedContent } = analyzeChanges(originalText, modifiedText);
+        
+        document.getElementById('wordReplacementsCount').textContent = wordReplacements;
+        document.getElementById('structureChangesCount').textContent = structureChanges;
+        document.getElementById('addedContentCount').textContent = addedContent;
+        
+        // 生成详细修改
+        const detailedChanges = document.getElementById('detailedChanges');
+        detailedChanges.innerHTML = '';
+        
+        const changes = findDifferences(originalText, modifiedText);
+        changes.forEach(change => {
+          const div = document.createElement('div');
+          div.className = 'mb-1 p-1 rounded';
+          
+          if (change.type === 'added') {
+            div.className += ' bg-green-100 text-green-800';
+            div.innerHTML = `<i class="fa fa-plus-circle mr-1"></i> <span class="font-medium">添加:</span> ${change.value}`;
+          } else if (change.type === 'removed') {
+            div.className += ' bg-red-100 text-red-800';
+            div.innerHTML = `<i class="fa fa-minus-circle mr-1"></i> <span class="font-medium">删除:</span> ${change.value}`;
+          } else if (change.type === 'modified') {
+            div.className += ' bg-yellow-100 text-yellow-800';
+            div.innerHTML = `<i class="fa fa-exchange mr-1"></i> <span class="font-medium">替换:</span> ${change.original} <span class="text-gray-500">→</span> ${change.modified}`;
+          }
+          
+          detailedChanges.appendChild(div);
+        });
+        
+        document.getElementById('compareModal').classList.remove('hidden');
+      });
+      
+      // 关闭对比模态框按钮
+      document.getElementById('closeCompareModalBtn').addEventListener('click', function() {
+        document.getElementById('compareModal').classList.add('hidden');
+      });
+      
+      // 关闭对比按钮
+      document.getElementById('closeCompareBtn').addEventListener('click', function() {
+        document.getElementById('compareModal').classList.add('hidden');
+      });
+      
+      // 原始文本输入事件
+      document.getElementById('originalText').addEventListener('input', updateCharCount);
+      
+      // 结果文本输入事件（虽然是只读，但可能通过其他方式修改）
+      document.getElementById('resultText').addEventListener('input', updateCharCount);
+      
+      // 初始化模板列表
+      updateTemplatesList();
+    }
+    
+    // 更新字符计数
+    function updateCharCount() {
+      const originalText = document.getElementById('originalText').value;
+      const resultText = document.getElementById('resultText').value;
+      
+      document.getElementById('charCount').textContent = originalText.length;
+      document.getElementById('resultCharCount').textContent = resultText.length;
+    }
+    
+    // 随机化文本
+    function randomizeText(text, intensity) {
+      // 基本的文本随机化实现
+      let result = text;
+      
+      // 确保强度在1-10之间
+      intensity = Math.max(1, Math.min(10, intensity));
+      
+      // 根据强度调整随机化的概率
+      const probability = intensity / 10;
+      
+      // 1. 同义词替换
+      if (document.getElementById('synonymReplace').checked && Math.random() < probability) {
+        result = replaceSynonyms(result, probability);
+      }
+      
+      // 2. 打乱句子顺序
+      if (document.getElementById('shuffleSentences').checked && Math.random() < probability) {
+        result = shuffleSentences(result, probability);
+      }
+      
+      // 3. 添加随机短语
+      if (document.getElementById('addRandomPhrases').checked && Math.random() < probability) {
+        result = addRandomPhrases(result, probability);
+      }
+      
+      // 4. 改变语气
+      if (document.getElementById('changeTone').checked && Math.random() < probability) {
+        result = changeTone(result, probability);
+      }
+      
+      // 5. 插入表情符号
+      if (document.getElementById('insertEmojis').checked && Math.random() < probability) {
+        result = insertEmojis(result, probability);
+      }
+      
+      // 6. 变化标点符号
+      if (document.getElementById('varyPunctuation').checked && Math.random() < probability) {
+        result = varyPunctuation(result, probability);
+      }
+      
+      return result;
+    }
+    
+    // 同义词替换
+    function replaceSynonyms(text, probability) {
+      // 简单的同义词库
+      const synonyms = {
+        "你好": ["您好", "哈喽", "嗨", "你好呀"],
+        "谢谢": ["感谢", "多谢", "谢谢啦", "感激不尽"],
+        "非常": ["十分", "相当", "很", "极其"],
+        "漂亮": ["美丽", "好看", "靓丽", "标致"],
+        "重要": ["关键", "主要", "核心", "紧要"],
+        "购买": ["选购", "购置", "买下", "采购"],
+        "产品": ["商品", "货品", "物品", "东西"],
+        "服务": ["效劳", "服侍", "提供帮助", "服务项目"],
+        "联系": ["联络", "沟通", "联系一下", "取得联系"],
+        "问题": ["疑问", "难题", "困惑", "毛病"],
+        "价格": ["价钱", "售价", "价位", "标价"],
+        "优惠": ["折扣", "让利", "特惠", "便宜"],
+        "欢迎": ["欢迎光临", "热烈欢迎", "欢迎惠顾", "敬请光临"],
+        "质量": ["品质", "质地", "质量水平", "品质保证"],
+        "可靠": ["可信", "可靠的", "值得信赖", "稳妥"],
+        "随时": ["任何时候", "随时都可以", "即刻", "马上"],
+        "期待": ["期望", "盼望", "期待着", "希望"],
+        "合作": ["协作", "合作共事", "携手合作", "共同合作"]
+      };
+      
+      // 将文本按空格、标点分割成词语
+      const words = text.split(/(\s+|[^\w\s])/);
+      
+      // 对每个词语尝试替换为同义词
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i].trim();
+        
+        // 只处理非空词语和非标点符号
+        if (word && /[\u4e00-\u9fa5]/.test(word) && Math.random() < probability) {
+          if (synonyms[word]) {
+            const syns = synonyms[word];
+            words[i] = words[i].replace(word, syns[Math.floor(Math.random() * syns.length)]);
+          }
+        }
+      }
+      
+      return words.join('');
+    }
+    
+    // 打乱句子顺序
+    function shuffleSentences(text, probability) {
+      // 按句号、问号、感叹号分割句子
+      const sentences = text.split(/([。？！])/);
+      const result = [];
+      
+      // 重组句子数组
+      let currentSentence = '';
+      for (let i = 0; i < sentences.length; i++) {
+        // 句子内容和标点符号交替出现
+        if (i % 2 === 0) {
+          currentSentence = sentences[i];
+        } else {
+          currentSentence += sentences[i];
+          result.push(currentSentence);
+          currentSentence = '';
+        }
+      }
+      
+      // 如果最后还有剩余内容，添加到结果中
+      if (currentSentence) {
+        result.push(currentSentence);
+      }
+      
+      // 只在句子数量大于1且概率满足时打乱顺序
+      if (result.length > 1 && Math.random() < probability) {
+        // Fisher-Yates 洗牌算法
+        for (let i = result.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+      }
+      
+      return result.join('');
+    }
+    
+    // 添加随机短语
+    function addRandomPhrases(text, probability) {
+      const phrases = [
+        "顺便说一下", "另外", "还有", "值得一提的是", "特别地", "尤其是", 
+        "当然", "实际上", "事实上", "可以说", "正如你所知", "简单来说",
+        "总的来说", "综上所述", "因此", "所以", "由此可见", "显然",
+        "此外", "而且", "并且", "同时", "同样地", "相反地",
+        "不过", "但是", "然而", "尽管如此", "话虽如此", "无论如何"
+      ];
+      
+      // 按句子分割
+      const sentences = text.split(/([。？！])/);
+      const result = [];
+      
+      for (let i = 0; i < sentences.length; i++) {
+        result.push(sentences[i]);
+        
+        // 在每个句子后有一定概率添加随机短语
+        if (i % 2 === 0 && i < sentences.length - 1 && Math.random() < probability) {
+          result.push(' ' + phrases[Math.floor(Math.random() * phrases.length)] + ' ');
+        }
+      }
+      
+      return result.join('');
+    }
+    
+    // 改变语气
+    function changeTone(text, probability) {
+      // 简单的语气转换实现
+      if (Math.random() < 0.5) {
+        // 向更正式的语气转换
+        text = text.replace(/你/g, "您");
+        text = text.replace(/好的/g, "好的，没问题");
+        text = text.replace(/可以/g, "可以的，没问题");
+        text = text.replace(/行/g, "可以，没问题");
+        text = text.replace(/知道了/g, "了解了，谢谢告知");
+      } else {
+        // 向更随意的语气转换
+        text = text.replace(/您/g, "你");
+        text = text.replace(/好的，没问题/g, "好的");
+        text = text.replace(/可以的，没问题/g, "可以");
+        text = text.replace(/可以，没问题/g, "行");
+        text = text.replace(/了解了，谢谢告知/g, "知道了");
+      }
+      
+      return text;
+    }
+    
+    // 插入表情符号
+    function insertEmojis(text, probability) {
+      const emojis = ["😊", "👍", "👋", "🌟", "💡", "🔥", "🚀", "🎉", "🤝", "🙌", "🙏", "❤️", "✨", "🎯", "💯"];
+      
+      // 将文本按字符分割
+      const chars = text.split('');
+      const result = [];
+      
+      for (let i = 0; i < chars.length; i++) {
+        result.push(chars[i]);
+        
+        // 在每个字符后有一定概率插入表情符号
+        if (Math.random() < probability / 5) {
+          result.push(emojis[Math.floor(Math.random() * emojis.length)]);
+        }
+      }
+      
+      return result.join('');
+    }
+    
+    // 变化标点符号
+    function varyPunctuation(text, probability) {
+      // 替换句号
+      text = text.replace(/。/g, () => Math.random() < 0.3 ? "！" : (Math.random() < 0.3 ? "？" : "。"));
+      
+      // 替换逗号
+      text = text.replace(/，/g, () => Math.random() < 0.2 ? "；" : (Math.random() < 0.2 ? "——" : "，"));
+      
+      // 添加或删除感叹号
+      text = text.replace(/！+/g, match => {
+        if (Math.random() < 0.5) {
+          return "！"; // 统一为单个感叹号
+        } else if (Math.random() < 0.3) {
+          return ""; // 删除感叹号
+        } else {
+          return match + "！"; // 添加更多感叹号
+        }
+      });
+      
+      // 添加或删除问号
+      text = text.replace(/？+/g, match => {
+        if (Math.random() < 0.5) {
+          return "？"; // 统一为单个问号
+        } else if (Math.random() < 0.3) {
+          return ""; // 删除问号
+        } else {
+          return match + "？"; // 添加更多问号
+        }
+      });
+      
+      return text;
+    }
+    
+    // 更新相似度指标
+    function updateSimilarityIndicators(originalText, modifiedText) {
+      // 计算相似度
+      const wordMatch = calculateWordMatch(originalText, modifiedText);
+      const structureMatch = calculateStructureMatch(originalText, modifiedText);
+      const overallMatch = (wordMatch + structureMatch) / 2;
+      
+      // 更新DOM
+      document.getElementById('wordMatch').textContent = wordMatch.toFixed(1) + '%';
+      document.getElementById('structureMatch').textContent = structureMatch.toFixed(1) + '%';
+      document.getElementById('overallMatch').textContent = overallMatch.toFixed(1) + '%';
+      
+      // 更新进度条
+      document.getElementById('wordMatchBar').style.width = wordMatch + '%';
+      document.getElementById('structureMatchBar').style.width = structureMatch + '%';
+      document.getElementById('overallMatchBar').style.width = overallMatch + '%';
+      
+      // 设置进度条颜色
+      setProgressBarColor('wordMatchBar', wordMatch);
+      setProgressBarColor('structureMatchBar', structureMatch);
+      setProgressBarColor('overallMatchBar', overallMatch);
+      
+      // 更新统计数据
+      updateStats(overallMatch);
+    }
+    
+    // 设置进度条颜色
+    function setProgressBarColor(elementId, value) {
+      const element = document.getElementById(elementId);
+      
+      if (value < 30) {
+        element.className = 'bg-green-500 h-2 rounded-full';
+      } else if (value < 60) {
+        element.className = 'bg-yellow-500 h-2 rounded-full';
+      } else {
+        element.className = 'bg-red-500 h-2 rounded-full';
+      }
+    }
+    
+    // 重置相似度指标
+    function resetSimilarityIndicators() {
+      document.getElementById('wordMatch').textContent = '--';
+      document.getElementById('structureMatch').textContent = '--';
+      document.getElementById('overallMatch').textContent = '--';
+      
+      document.getElementById('wordMatchBar').style.width = '0%';
+      document.getElementById('structureMatchBar').style.width = '0%';
+      document.getElementById('overallMatchBar').style.width = '0%';
+      
+      document.getElementById('wordMatchBar').className = 'bg-red-500 h-2 rounded-full';
+      document.getElementById('structureMatchBar').className = 'bg-yellow-500 h-2 rounded-full';
+      document.getElementById('overallMatchBar').className = 'bg-green-500 h-2 rounded-full';
+    }
+    
+    // 计算词汇匹配度
+    function calculateWordMatch(originalText, modifiedText) {
+      // 简单的词汇匹配度计算
+      const originalWords = originalText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ').split(/\s+/).filter(w => w.length > 0);
+      const modifiedWords = modifiedText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ').split(/\s+/).filter(w => w.length > 0);
+      
+      if (originalWords.length === 0) return 0;
+      
+      let matchCount = 0;
+      const originalSet = new Set(originalWords);
+      const modifiedSet = new Set(modifiedWords);
+      
+      for (const word of originalSet) {
+        if (modifiedSet.has(word)) {
+          matchCount++;
+        }
+      }
+      
+      return (matchCount / originalSet.size) * 100;
+    }
+    
+    // 计算结构相似度
+    function calculateStructureMatch(originalText, modifiedText) {
+      // 计算句子数量相似度
+      const originalSentences = originalText.split(/[。？！]/).filter(s => s.trim().length > 0);
+      const modifiedSentences = modifiedText.split(/[。？！]/).filter(s => s.trim().length > 0);
+      
+      const sentenceRatio = Math.min(originalSentences.length, modifiedSentences.length) / Math.max(originalSentences.length, modifiedSentences.length);
+      
+      // 计算长度相似度
+      const lengthRatio = Math.min(originalText.length, modifiedText.length) / Math.max(originalText.length, modifiedText.length);
+      
+      return ((sentenceRatio + lengthRatio) / 2) * 100;
+    }
+    
+    // 更新WhatsApp链接
+    function updateWhatsappLink(text) {
+      const whatsappBtn = document.getElementById('whatsappBtn');
+      if (text.trim()) {
+        const encodedText = encodeURIComponent(text);
+        whatsappBtn.href = `https://wa.me/?text=${encodedText}`;
+        whatsappBtn.removeAttribute('disabled');
+        whatsappBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        whatsappBtn.href = '#';
+        whatsappBtn.setAttribute('disabled', 'true');
+        whatsappBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+    
+    // 分析文本变化
+    function analyzeChanges(originalText, modifiedText) {
+      const originalWords = originalText.split(/\s+/);
+      const modifiedWords = modifiedText.split(/\s+/);
+      
+      let wordReplacements = 0;
+      let structureChanges = 0;
+      let addedContent = 0;
+      
+      // 简单的变化分析
+      if (originalWords.length !== modifiedWords.length) {
+        structureChanges++;
+        addedContent = Math.abs(modifiedWords.length - originalWords.length);
+      }
+      
+      // 计算词汇替换
+      const minLength = Math.min(originalWords.length, modifiedWords.length);
+      for (let i = 0; i < minLength; i++) {
+        if (originalWords[i] !== modifiedWords[i]) {
+          wordReplacements++;
+        }
+      }
+      
+      return { wordReplacements, structureChanges, addedContent };
+    }
+    
+    // 查找文本差异
+    function findDifferences(originalText, modifiedText) {
+      const changes = [];
+      const originalWords = originalText.split(/\s+/);
+      const modifiedWords = modifiedText.split(/\s+/);
+      
+      // 简单的差异检测
+      const maxLength = Math.max(originalWords.length, modifiedWords.length);
+      
+      for (let i = 0; i < maxLength; i++) {
+        const originalWord = originalWords[i] || '';
+        const modifiedWord = modifiedWords[i] || '';
+        
+        if (originalWord && !modifiedWord) {
+          changes.push({ type: 'removed', value: originalWord });
+        } else if (!originalWord && modifiedWord) {
+          changes.push({ type: 'added', value: modifiedWord });
+        } else if (originalWord !== modifiedWord) {
+          changes.push({ type: 'modified', original: originalWord, modified: modifiedWord });
+        }
+      }
+      
+      return changes;
+    }
+    
+    // 更新模板列表
+    function updateTemplatesList(searchTerm = '') {
+      const templates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+      const templatesList = document.getElementById('templatesList');
+      
+      if (!templatesList) return;
+      
+      templatesList.innerHTML = '';
+      
+      const filteredTemplates = templates.filter(template => 
+        template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.content.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      if (filteredTemplates.length === 0) {
+        templatesList.innerHTML = '<div class="text-center text-gray-500 py-8">暂无模板</div>';
+        return;
+      }
+      
+      filteredTemplates.forEach(template => {
+        const templateElement = document.createElement('div');
+        templateElement.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors';
+        templateElement.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-medium text-gray-800">${template.name}</h4>
+            <div class="flex space-x-2">
+              <button onclick="useTemplate('${template.id}')" class="text-primary hover:text-secondary text-sm">
+                <i class="fa fa-play"></i> 使用
+              </button>
+              <button onclick="deleteTemplate('${template.id}')" class="text-red-500 hover:text-red-700 text-sm">
+                <i class="fa fa-trash"></i> 删除
+              </button>
+            </div>
+          </div>
+          <p class="text-gray-600 text-sm">${template.content.substring(0, 100)}${template.content.length > 100 ? '...' : ''}</p>
+          <div class="text-xs text-gray-400 mt-2">
+            创建时间: ${new Date(template.created).toLocaleDateString()}
+          </div>
+        `;
+        templatesList.appendChild(templateElement);
+      });
+    }
+    
+    // 使用模板
+    function useTemplate(templateId) {
+      const templates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+      const template = templates.find(t => t.id == templateId);
+      
+      if (template) {
+        document.getElementById('originalText').value = template.content;
+        updateCharCount();
+        
+        // 滚动到编辑器
+        const editor = document.getElementById('editor');
+        window.scrollTo({
+          top: editor.offsetTop - 80,
+          behavior: 'smooth'
+        });
+      }
+    }
+    
+    // 删除模板
+    function deleteTemplate(templateId) {
+      if (confirm('确定要删除这个模板吗？')) {
+        let templates = JSON.parse(localStorage.getItem('whatsapp_templates')) || [];
+        templates = templates.filter(t => t.id != templateId);
+        localStorage.setItem('whatsapp_templates', JSON.stringify(templates));
+        updateTemplatesList();
+      }
+    }
+    
+    // 初始化图表
+    function initCharts() {
+      // 这里可以初始化Chart.js图表，目前留空
+      console.log('Charts initialized');
+    }
+    
+    // 更新统计数据
+    function updateStats(similarity) {
+      // 更新使用统计
+      let stats = JSON.parse(localStorage.getItem('whatsapp_stats')) || {
+        totalGenerations: 0,
+        averageSimilarity: 0,
+        lastUsed: null
+      };
+      
+      stats.totalGenerations++;
+      stats.averageSimilarity = ((stats.averageSimilarity * (stats.totalGenerations - 1)) + similarity) / stats.totalGenerations;
+      stats.lastUsed = new Date().toISOString();
+      
+      localStorage.setItem('whatsapp_stats', JSON.stringify(stats));
+    }
+  </script>
+</body>
+</html>
